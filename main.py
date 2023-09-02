@@ -12,7 +12,7 @@ from scipy.stats import randint
 print(randint(low=1,high=3))
 train_data = pd.read_csv('./train.csv')
 test_data = pd.read_csv('./test.csv')
-
+# quit()
 #Cleaning the data
 unused_atributes = ['Name']
 
@@ -119,13 +119,16 @@ parameters_grid = {'random_forest__n_estimators':randint(low=20,high=250),
 #
 
 # print(train_data,train_data[label])
-random_search = RandomizedSearchCV(pipeline_with_forest_model, param_distributions=parameters_grid,n_iter=30,cv=3,scoring='neg_root_mean_squared_error',random_state=42)
+random_search = RandomizedSearchCV(pipeline_with_forest_model, param_distributions=parameters_grid,n_iter=300,cv=3,scoring='neg_root_mean_squared_error',random_state=42)
 random_search.fit(train_data,train_data[label])
-print(random_search.best_estimator_)
-print(random_search.best_params_)
-print(random_search.best_score_)
-print(random_search.best_index_)
-print(random_search.scorer_)
+with open('resultsRandomizedSearch.txt','w') as file:
+    file.write('\nBEST_PARAMS\n')
+    file.write(str(random_search.best_params_))
+    file.write('\nBEST_SCORE\n')
+    file.write(str(random_search.best_score_))
+    file.write('\nBEST_INDEX\n')
+    file.write(str(random_search.best_index_))
+
 # print(tnd)
         
         

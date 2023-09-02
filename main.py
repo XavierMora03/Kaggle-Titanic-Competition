@@ -51,12 +51,15 @@ def normalizeTicket(df):
     df.SibSp = df.SibSp.astype(np.uint8)
     return df
 
+def normalizeTicketNamesOut(function_transformer, feature_names_in):
+    return ['PassengerId', 'Survived' ,'Pclass' ,'Sex' ,'Age,' 'SibSp,' 'Parch' ,'Fare', 'Cabin', 'Embarked','Ticket_number','Ticket_string']
 
-ticket_transformer = FunctionTransformer(normalizeTicket,feature_names_out='one-to-one')
+
+ticket_transformer = FunctionTransformer(normalizeTicket,feature_names_out=normalizeTicketNamesOut)
 
 train_data = ticket_transformer.fit_transform(train_data)
 print(train_data)
-quit()
+print(ticket_transformer.get_feature_names_out())
 cat_pipeline = Pipeline([
         ('impute',SimpleImputer(strategy='constant',fill_value='')),
         ('encode',OneHotEncoder(handle_unknown='ignore'))])
@@ -68,12 +71,15 @@ num_pipeline = Pipeline([
 
 
 num_attribs = ['PassengerId','Pclass','Age','SibSp','Parch','Fare','Ticket_number']
+print(num_attribs)
 cat_atribs = ['Sex','Embarked','Cabin','Ticket_string']
 
 preprocessing_pipeline  = ColumnTransformer([
     ('num',num_pipeline,num_attribs),
     ('cat',cat_pipeline,cat_atribs)
     ])
+
+
 
 processed_train_data = preprocessing_pipeline.fit_transform(train_data)
 #just another name

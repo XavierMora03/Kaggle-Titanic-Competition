@@ -1,0 +1,7 @@
+
+BEST_PARAMS
+{'random_forest__max_features': 24, 'random_forest__n_estimators': 87}
+BEST_SCORE
+-0.372163604075536
+BEST_INDEX
+131

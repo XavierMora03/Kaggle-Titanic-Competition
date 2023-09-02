@@ -7,7 +7,7 @@ from sklearn.preprocessing import FunctionTransformer, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-
+from sklearn.model_selection import cross_val_score, GridSearchCV
 import numpy as np
 import pandas as pd
 
@@ -17,8 +17,8 @@ test_data = pd.read_csv('./test.csv')
 #Cleaning the data
 unused_atributes = ['Name']
 
-train_data = train_data.drop("Name",axis=1)
-test_data = test_data.drop('Name',axis=1)
+# train_data = train_data.drop("Name",axis=1)
+# test_data = test_data.drop('Name',axis=1)
 
 #Function for splithing the tiket data
 def split_ticket_string(ticket):
@@ -66,7 +66,6 @@ num_pipeline = Pipeline([
         ])
 
 num_attribs = ['PassengerId','Pclass','Age','SibSp','Parch','Fare','Ticket_number']
-print(num_attribs)
 cat_atribs = ['Sex','Embarked','Cabin','Ticket_string']
 
 preprocessing_pipeline_partial  = ColumnTransformer([
@@ -79,9 +78,12 @@ preprocessing_pipeline = Pipeline([
     ('general_pipeline',preprocessing_pipeline_partial)
     ])
 
+label = 'Survived'
+'''
+
+train_data = ticket_transformer.fit_transform(train_data)
 processed_train_data = preprocessing_pipeline.fit_transform(train_data)
 #just another name
-label = 'Survived'
 X = processed_train_data
 y = train_data[label]
 
@@ -94,13 +96,31 @@ predictions = model.predict(val_X)
 #using cross validation
 from sklearn.model_selection import cross_val_score
 
-random_forest_cross_val_scores = -cross_val_score(model, processed_train_data, train_data['Survived'],scoring='neg_root_mean_squared_error',cv=12)
-print(pd.Series(random_forest_cross_val_scores).describe())
+# random_forest_cross_val_scores = -cross_val_score(model, X, y,scoring='neg_root_mean_squared_error',cv=12)
+# print(pd.Series(random_forest_cross_val_scores).describe())
 
+'''
+#GRID SEARCH
+
+pipeline_with_forest_model = Pipeline([
+    ('pipeline',preprocessing_pipeline),
+    ('random_forest',RandomForestRegressor(random_state=42))
+    ])
+
+parameters_grid = [
+        {'random_forest__n_estimators':[50,100,200,300],
+        'random_forest__max_features':[5,8,20,25,40]}
+        ]
+
+# print(train_data,train_data[label])
+grid_search = GridSearchCV(pipeline_with_forest_model,parameters_grid,cv=3, scoring = 'neg_root_mean_squared_error')
+
+grid_search.fit(train_data,train_data[label])
+print(grid_search.best_params_)
+print(grid_search.best_estimator_)
+
+cv_results  = pd.DataFrame(grid_search.cv_results_)
+cv_results.sort_values(by='mean_test_score',ascending=False,inplace=True)
+print(cv_results.head())
 #TEST SET
-test_data['Ticket_number'] = 0
-test_data['Ticket_string'] = ''
-
 test_data_processed = preprocessing_pipeline.fit_transform(test_data)
-
-

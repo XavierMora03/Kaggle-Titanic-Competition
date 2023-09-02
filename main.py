@@ -54,7 +54,6 @@ def normalizeTicket(df):
 def normalizeTicketNamesOut(function_transformer, feature_names_in):
     return ['PassengerId', 'Survived' ,'Pclass' ,'Sex' ,'Age,' 'SibSp,' 'Parch' ,'Fare', 'Cabin', 'Embarked','Ticket_number','Ticket_string']
 
-
 ticket_transformer = FunctionTransformer(normalizeTicket,feature_names_out=normalizeTicketNamesOut)
 
 train_data = ticket_transformer.fit_transform(train_data)
@@ -68,7 +67,6 @@ num_pipeline = Pipeline([
         ('impute',SimpleImputer(strategy='mean')),
         ('standardize',StandardScaler())
         ])
-
 
 num_attribs = ['PassengerId','Pclass','Age','SibSp','Parch','Fare','Ticket_number']
 print(num_attribs)

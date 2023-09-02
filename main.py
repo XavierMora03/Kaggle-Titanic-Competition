@@ -1,16 +1,15 @@
 from numpy import NaN
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import FunctionTransformer, OneHotEncoder
+from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import cross_val_score, GridSearchCV
+from sklearn.model_selection import train_test_split,cross_val_score, GridSearchCV, RandomizedSearchCV
 import numpy as np
 import pandas as pd
-
+from scipy.stats import randint
+print(randint(low=1,high=3))
 train_data = pd.read_csv('./train.csv')
 test_data = pd.read_csv('./test.csv')
 
@@ -112,7 +111,25 @@ parameters_grid = [
         'random_forest__max_features':[5,8,20,25,40]}
         ]
 
+n__estimator = range(20,250)
+parameters_grid = {'random_forest__n_estimators':randint(low=20,high=250),
+                    'random_forest__max_features':randint(low=2, high=30)}
+# parameters_grid = {'random_forest__n_estimators':range(20,250),
+#                     'random_forest__max_features':range(2, 30)}
+#
+
 # print(train_data,train_data[label])
+random_search = RandomizedSearchCV(pipeline_with_forest_model, param_distributions=parameters_grid,n_iter=30,cv=3,scoring='neg_root_mean_squared_error',random_state=42)
+random_search.fit(train_data,train_data[label])
+print(random_search.best_estimator_)
+print(random_search.best_params_)
+print(random_search.best_score_)
+print(random_search.best_index_)
+print(random_search.scorer_)
+# print(tnd)
+        
+        
+quit()
 grid_search = GridSearchCV(pipeline_with_forest_model,parameters_grid,cv=3, scoring = 'neg_root_mean_squared_error')
 
 grid_search.fit(train_data,train_data[label])

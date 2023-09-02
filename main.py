@@ -1,3 +1,7 @@
+from sklearnex import patch_sklearn 
+patch_sklearn()
+
+
 from numpy import NaN
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import make_pipeline, Pipeline
@@ -9,7 +13,7 @@ from sklearn.model_selection import train_test_split,cross_val_score, GridSearch
 import numpy as np
 import pandas as pd
 from scipy.stats import randint
-print(randint(low=1,high=3))
+
 train_data = pd.read_csv('./train.csv')
 test_data = pd.read_csv('./test.csv')
 # quit()
@@ -119,9 +123,32 @@ parameters_grid = {'random_forest__n_estimators':randint(low=20,high=250),
 #
 
 # print(train_data,train_data[label])
-random_search = RandomizedSearchCV(pipeline_with_forest_model, param_distributions=parameters_grid,n_iter=300,cv=3,scoring='neg_root_mean_squared_error',random_state=42)
+
+
+# Number of trees in random forest
+n_estimators = [int(x) for x in np.linspace(start = 10, stop = 1000, num = 10)]
+# Number of features to consider at every split
+max_features = ['auto', 'sqrt']
+# Maximum number of levels in tree
+max_depth = [int(x) for x in np.linspace(10, 110, num = 11)]
+max_depth.append(None)
+# Minimum number of samples required to split a node
+min_samples_split = [2, 5, 10]
+# Minimum number of samples required at each leaf node
+min_samples_leaf = [1, 2, 4]
+# Method of selecting samples for training each tree
+bootstrap = [True, False]# Create the random grid
+random_grid = {'random_forest__n_estimators': n_estimators,
+               'random_forest__max_features': max_features,
+               'random_forest__max_depth': max_depth,
+               'random_forest__min_samples_split': min_samples_split,
+               'random_forest__min_samples_leaf': min_samples_leaf,
+               'random_forest__bootstrap': bootstrap}
+
+# random_search = RandomizedSearchCV(pipeline_with_forest_model, param_distributions=parameters_grid,n_iter=500,cv=3,scoring='neg_root_mean_squared_error',random_state=42)
+random_search = RandomizedSearchCV(pipeline_with_forest_model, param_distributions=parameters_grid,n_iter=500,cv=3,scoring='neg_root_mean_squared_error',random_state=42)
 random_search.fit(train_data,train_data[label])
-with open('resultsRandomizedSearch.txt','w') as file:
+with open('resultsRandomizedSearch.txt','a') as file:
     file.write('\nBEST_PARAMS\n')
     file.write(str(random_search.best_params_))
     file.write('\nBEST_SCORE\n')

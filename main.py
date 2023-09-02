@@ -56,9 +56,6 @@ def normalizeTicketNamesOut(function_transformer, feature_names_in):
 
 ticket_transformer = FunctionTransformer(normalizeTicket,feature_names_out=normalizeTicketNamesOut)
 
-train_data = ticket_transformer.fit_transform(train_data)
-print(train_data)
-print(ticket_transformer.get_feature_names_out())
 cat_pipeline = Pipeline([
         ('impute',SimpleImputer(strategy='constant',fill_value='')),
         ('encode',OneHotEncoder(handle_unknown='ignore'))])
@@ -72,12 +69,15 @@ num_attribs = ['PassengerId','Pclass','Age','SibSp','Parch','Fare','Ticket_numbe
 print(num_attribs)
 cat_atribs = ['Sex','Embarked','Cabin','Ticket_string']
 
-preprocessing_pipeline  = ColumnTransformer([
+preprocessing_pipeline_partial  = ColumnTransformer([
     ('num',num_pipeline,num_attribs),
     ('cat',cat_pipeline,cat_atribs)
     ])
 
-
+preprocessing_pipeline = Pipeline([
+    ('ticket_separator',ticket_transformer),
+    ('general_pipeline',preprocessing_pipeline_partial)
+    ])
 
 processed_train_data = preprocessing_pipeline.fit_transform(train_data)
 #just another name

@@ -1,20 +1,20 @@
 from numpy import NaN
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
 
 import numpy as np
 import pandas as pd
 
- 
 train_data = pd.read_csv('./train.csv')
 test_data = pd.read_csv('./test.csv')
 
+print(train_data.head()) 
 #Cleaning the data
 unused_atributes = ['Name']
 
@@ -58,17 +58,12 @@ num_pipeline = Pipeline([
         ])
 
 
-train_data.info()
-from sklearn.compose import ColumnTransformer
-
-
-num_attribs = ['PassengerId','Survived','Pclass','Age','SibSp','Parch','Fare','Ticket_number']
+num_attribs = ['PassengerId','Pclass','Age','SibSp','Parch','Fare','Ticket_number']
 cat_atribs = ['Sex','Embarked','Cabin','Ticket_string']
 
 '''
 #funcion para ver cada categoria
 
-print(train_data.head())
 print(train_data['Ticket_string'])
 output_cat_Ticket_string = cat_pipeline.fit_transform(train_data[['Ticket_string']])
 
@@ -79,35 +74,48 @@ for i in range(len(cat_pipeline['encode'].categories_[0])):
 quit()
 '''
 
-print(train_data.head())
 preprocessing_pipeline  = ColumnTransformer([
     ('num',num_pipeline,num_attribs),
     ('cat',cat_pipeline,cat_atribs)
     ])
 
 processed_train_data = preprocessing_pipeline.fit_transform(train_data)
-print(processed_train_data)
-# print(preprocessing_pipeline['cat'])
-# print(processed_train_data[0,range(0,10)])
-quit()
-proceced_train_data_Data_Frame = pd.DataFrame(proceced_train_data,columns=preprocessing_pipeline.get_feature_names_out())#,index=train_data.index)
-print(proceced_train_data)
-quit()
+print(processed_train_data[:5])
 #just another name
 label = 'Survived'
-X = train_data.loc[:,train_data.columns != label]
+X = processed_train_data
 y = train_data[label]
-
-
 
 train_X,val_X, train_y,val_y = train_test_split(X,y,test_size=0.2)
 model = RandomForestRegressor(random_state=42)
 model.fit(train_X,train_y)
 
-
 predictions = model.predict(val_X)
 
-print(mean_squared_error(predictions,val_y,squared=False))
+total_asserts = 0
+for i in range(len(predictions)):
+    print('predigo: ',predictions[i],'redondeo y da',round(predictions[i]), 'pero el resultado',val_y.iloc[i])
+    predictions[i]  = round(predictions[i])
+    if(predictions[i] == val_y.iloc[i]):
+        total_asserts+=1
+print('hola mis predicciones fueron',total_asserts/len(predictions))
+# print(mean_squared_error(predictions,val_y,squared=True))
 
-passengers  = train_data
+quit()
 
+#using cross validation
+from sklearn.model_selection import cross_val_score
+
+random_forest_cross_val_scores = -cross_val_score(model, processed_train_data, train_data['Survived'],scoring='neg_root_mean_squared_error',cv=12)
+print(random_forest_cross_val_scores)
+print(pd.Series(random_forest_cross_val_scores).describe())
+
+#TEST SET
+test_data['Ticket_number'] = 0
+test_data['Ticket_string'] = ''
+test_data = test_data.apply(separateTicket,axis='columns')
+
+test_data_processed = preprocessing_pipeline.fit_transform(test_data)
+
+
+print(test_data_processed)

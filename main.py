@@ -61,19 +61,6 @@ num_pipeline = Pipeline([
 num_attribs = ['PassengerId','Pclass','Age','SibSp','Parch','Fare','Ticket_number']
 cat_atribs = ['Sex','Embarked','Cabin','Ticket_string']
 
-'''
-#funcion para ver cada categoria
-
-print(train_data['Ticket_string'])
-output_cat_Ticket_string = cat_pipeline.fit_transform(train_data[['Ticket_string']])
-
-for i in range(len(cat_pipeline['encode'].categories_[0])):
-    print('I ES IGUAL A',i)
-    print(output_cat_Ticket_string[:,i])
-    print(cat_pipeline['encode'].categories_[0][i])
-quit()
-'''
-
 preprocessing_pipeline  = ColumnTransformer([
     ('num',num_pipeline,num_attribs),
     ('cat',cat_pipeline,cat_atribs)
@@ -101,7 +88,6 @@ for i in range(len(predictions)):
 print('hola mis predicciones fueron',total_asserts/len(predictions))
 # print(mean_squared_error(predictions,val_y,squared=True))
 
-quit()
 
 #using cross validation
 from sklearn.model_selection import cross_val_score
